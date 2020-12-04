@@ -19,6 +19,6 @@ class MCTS {
   double simulate(Node* node);
   void backprop(double result, Node* node);
   void uct_search(int round);  // run search multiple times
-  void update_tree(int move);
-  int get_move();
+  void update_tree(int move);  // update tree with move
+  int get_move();              // get current best move
 };

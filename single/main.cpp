@@ -25,8 +25,7 @@ int main() {
       p2.update_tree(move);
     }
     sum += (int)game.status;
-    if(i % 10 == 0)
-      std::cout << (sum / (double)(i + 1) - 1) / 2 << std::endl;
+    if (i % 10 == 0) std::cout << (sum / (double)(i + 1) - 1) / 2 << std::endl;
   }
-    std::cout << (sum / 500.0 - 1) / 2 << std::endl;
+  std::cout << (sum / 500.0 - 1) / 2 << std::endl;
 }
