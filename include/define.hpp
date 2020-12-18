@@ -1,0 +1,3 @@
+#pragma once
+
+#define EXPLORE_PARAM 1.414213562373095

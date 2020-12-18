@@ -2,32 +2,40 @@
 
 #include <algorithm>
 
-Game::Game(unsigned _size)
-    : size(_size), board(_size * _size, -1), avai_op(_size * _size) {
-  board.shrink_to_fit();
+Game::Game(unsigned board_size)
+    : _board_size(board_size),
+      avai_op(board_size * board_size),
+      player(0),
+      status(0) {
+  board = new int8_t[_board_size * _board_size];
+  for (int i = 0; i < _board_size * _board_size; ++i) {
+    board[i] = -1;
+  }
   avai_op.shrink_to_fit();
-  for (int i = 0; i < _size * _size; ++i) {
+  for (int i = 0; i < _board_size * _board_size; ++i) {
     avai_op[i] = i;
   }
 }
 
 Game::Game(const Game& game)
-    : size(game.size),
-      board(game.board),
+    : _board_size(game._board_size),
       avai_op(game.avai_op),
-      prev_move(game.prev_move),
       player(game.player),
       status(game.status) {
-  board.shrink_to_fit();
+  board = new int8_t[_board_size * _board_size];
+  for (int i = 0; i < _board_size * _board_size; ++i) {
+    board[i] = game.board[i];
+  }
   avai_op.shrink_to_fit();
 }
 
-Game::~Game() {}
+Game::~Game() {
+  delete[] board;
+}
 
 void Game::move(int pos) {
   // put piece
   board[pos] = player;
-  prev_move = pos;
   if (bingo(pos)) {
     status = 1 + player * 2;  // win
     avai_op.clear();
@@ -47,6 +55,8 @@ bool Game::bingo(int pos) {
   // left right
   int line_len = 1;
   int pos_itr = pos;
+  int size = _board_size;
+  int size_1 = size_1;
   while (pos_itr % size > 0) {
     pos_itr--;
     if (board[pos_itr] == player) {
@@ -56,7 +66,7 @@ bool Game::bingo(int pos) {
     }
   }
   pos_itr = pos;
-  while (pos_itr % size < size - 1) {
+  while (pos_itr % size < size_1) {
     pos_itr++;
     if (board[pos_itr] == player) {
       line_len++;
@@ -79,7 +89,7 @@ bool Game::bingo(int pos) {
     }
   }
   pos_itr = pos;
-  while (pos_itr / size < size - 1) {
+  while (pos_itr / size < size_1) {
     pos_itr += size;
     if (board[pos_itr] == player) {
       line_len++;
@@ -102,7 +112,7 @@ bool Game::bingo(int pos) {
     }
   }
   pos_itr = pos;
-  while (pos_itr / size < size - 1 && pos_itr % size < size - 1) {
+  while (pos_itr / size < size_1 && pos_itr % size < size_1) {
     pos_itr += (size + 1);
     if (board[pos_itr] == player) {
       line_len++;
@@ -116,8 +126,8 @@ bool Game::bingo(int pos) {
   // right up left down
   line_len = 1;
   pos_itr = pos;
-  while (pos_itr / size > 0 && pos_itr % size < size - 1) {
-    pos_itr -= (size - 1);
+  while (pos_itr / size > 0 && pos_itr % size < size_1) {
+    pos_itr -= (size_1);
     if (board[pos_itr] == player) {
       line_len++;
     } else {
@@ -125,8 +135,8 @@ bool Game::bingo(int pos) {
     }
   }
   pos_itr = pos;
-  while (pos_itr / size < size - 1 && pos_itr % size > 0) {
-    pos_itr += (size - 1);
+  while (pos_itr / size < size_1 && pos_itr % size > 0) {
+    pos_itr += (size_1);
     if (board[pos_itr] == player) {
       line_len++;
     } else {
