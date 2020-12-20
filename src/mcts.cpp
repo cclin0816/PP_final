@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <iterator>
+#include <omp.h>
 
 Node* NodeSelect(Node* root) {
   Node* node_itr = root;
@@ -79,6 +80,16 @@ Node* NodeExpand(Node* node, std::mt19937& rg) {
 }
 
 NodeWithLock* NodeWithLockExpand(NodeWithLock* node, std::mt19937& rg) {
+  if (node->untry_op.size() != 0) {
+    std::uniform_int_distribution<int> rand_choice(0,
+                                                   node->untry_op.size() - 1);
+    int choice = rand_choice(rg);
+    int move_choice = node->untry_op[choice];
+    NodeWithLock* new_node = new NodeWithLock(node, move_choice);
+    node->untry_op.erase(node->untry_op.begin() + choice);
+    node->c_node[FindMove(move_choice, node->game.avai_op)] = new_node;
+    node = new_node;
+  }
   return node;
 }
 
@@ -314,4 +325,158 @@ int MCTS_R_THD::GetMove() {
     }
   }
   return roots[0]->game.avai_op[next];
+}
+
+MCTS_T_G_THD::MCTS_T_G_THD(unsigned board_size, unsigned thread_num)
+    : thdn(thread_num), thds(thread_num), rgs(thread_num) {
+  root = new Node(board_size);
+  std::random_device rd;
+  for (int i = 0; i < thdn; i++) {
+    rgs[i].seed(rd());
+  }
+}
+
+MCTS_T_G_THD::~MCTS_T_G_THD() { delete root; }
+
+void MCTS_T_G_THD_Worker(Node* root, std::mt19937* rg, int round,
+                         std::mutex* lck_exp, std::mutex* lck_bkp) {
+  for (int i = 0; i < round; i++) {
+    Node* node = NodeSelect(root);
+    while (true) {
+      lck_exp->lock();
+      if ((!(node->tried_all())) || (node->c_node_size == 0)) {
+        break;
+      } else {
+        lck_exp->unlock();
+        node = NodeSelect(node);
+      }
+    }
+    node = NodeExpand(node, *rg);
+    lck_exp->unlock();
+    double r = Simulate(node->game, *rg);
+    lck_bkp->lock();
+    NodeBackprop(r, 1, node);
+    lck_bkp->unlock();
+  }
+}
+
+void MCTS_T_G_THD::UCTSearch(int round) {
+  for (int i = 0; i < thdn; i++) {
+    thds[i] = std::thread(MCTS_T_G_THD_Worker, root, &(rgs[i]), round / thdn,
+                          &lck_exp, &lck_bkp);
+  }
+  for (int i = 0; i < thdn; i++) {
+    thds[i].join();
+  }
+}
+
+void MCTS_T_G_THD::UpdateTree(int move) {
+  std::vector<int>::iterator find_move =
+      std::find(root->untry_op.begin(), root->untry_op.end(), move);
+  Node* new_node;
+  if (find_move != root->untry_op.end()) {
+    new_node = new Node(root, move);
+  } else {
+    int move_node = FindMove(move, root->game.avai_op);
+    new_node = root->c_node[move_node];
+    root->c_node[move_node] = nullptr;
+  }
+  delete root;
+  root = new_node;
+  root->p_node = nullptr;
+}
+
+int MCTS_T_G_THD::GetMove() {
+  double max_val = 0;
+  int next = 0;
+  Node** c_node = root->c_node;
+  for (int i = 0; i < root->c_node_size; i++) {
+    if (c_node[i] == nullptr) {
+      continue;
+    }
+    double score = c_node[i]->win_count / (double)(c_node[i]->simul_count);
+    if (c_node[i]->game.player != 0) {
+      score = 1.0 - score;
+    }
+    if (score > max_val) {
+      max_val = score;
+      next = i;
+    }
+  }
+  return root->game.avai_op[next];
+}
+
+MCTS_T_L_THD::MCTS_T_L_THD(unsigned board_size, unsigned thread_num)
+    : thdn(thread_num), thds(thread_num), rgs(thread_num) {
+  root = new NodeWithLock(board_size);
+  std::random_device rd;
+  for (int i = 0; i < thdn; i++) {
+    rgs[i].seed(rd());
+  }
+}
+
+MCTS_T_L_THD::~MCTS_T_L_THD() { delete root; }
+
+void MCTS_T_L_THD_Worker(NodeWithLock* root, std::mt19937* rg, int round) {
+  for (int i = 0; i < round; i++) {
+    NodeWithLock* node = NodeWithLockSelect(root);
+    while (true) {
+      node->lck.lock();
+      if ((!(node->tried_all())) || (node->c_node_size == 0)) {
+        break;
+      } else {
+        node->lck.unlock();
+        node = NodeWithLockSelect(node);
+      }
+    }
+    NodeWithLock* nnode = NodeWithLockExpand(node, *rg);
+    node->lck.unlock();
+    double r = Simulate(nnode->game, *rg);
+    NodeWithLockBackprop(r, 1, nnode);
+  }
+}
+
+void MCTS_T_L_THD::UCTSearch(int round) {
+  for (int i = 0; i < thdn; i++) {
+    thds[i] = std::thread(MCTS_T_L_THD_Worker, root, &(rgs[i]), round / thdn);
+  }
+  for (int i = 0; i < thdn; i++) {
+    thds[i].join();
+  }
+}
+
+void MCTS_T_L_THD::UpdateTree(int move) {
+  std::vector<int>::iterator find_move =
+      std::find(root->untry_op.begin(), root->untry_op.end(), move);
+  NodeWithLock* new_node;
+  if (find_move != root->untry_op.end()) {
+    new_node = new NodeWithLock(root, move);
+  } else {
+    int move_node = FindMove(move, root->game.avai_op);
+    new_node = root->c_node[move_node];
+    root->c_node[move_node] = nullptr;
+  }
+  delete root;
+  root = new_node;
+  root->p_node = nullptr;
+}
+
+int MCTS_T_L_THD::GetMove() {
+  double max_val = 0;
+  int next = 0;
+  NodeWithLock** c_node = root->c_node;
+  for (int i = 0; i < root->c_node_size; i++) {
+    if (c_node[i] == nullptr) {
+      continue;
+    }
+    double score = c_node[i]->win_count / (double)(c_node[i]->simul_count);
+    if (c_node[i]->game.player != 0) {
+      score = 1.0 - score;
+    }
+    if (score > max_val) {
+      max_val = score;
+      next = i;
+    }
+  }
+  return root->game.avai_op[next];
 }
