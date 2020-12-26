@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "game.hpp"
+#include "define.hpp"
 
 class Node {
  public:
@@ -14,7 +15,7 @@ class Node {
   std::vector<int> untry_op;
   unsigned simul_count;
   double win_count;
-  Node(unsigned board_size = 13);  // new node used by creating root
+  Node(unsigned board_size = BOARD_SIZE);  // new node used by creating root
   Node(Node* node, int move_pos);  // new node with father
   ~Node();
   bool tried_all();
@@ -30,7 +31,7 @@ class NodeWithLock {
   std::atomic<unsigned> simul_count;
   std::atomic<double> win_count;
   std::mutex lck;
-  NodeWithLock(unsigned board_size = 13);  // new node used by creating root
+  NodeWithLock(unsigned board_size = BOARD_SIZE);  // new node used by creating root
   NodeWithLock(NodeWithLock* node, int move_pos);  // new node with father
   ~NodeWithLock();
   bool tried_all();
