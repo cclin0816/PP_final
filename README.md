@@ -12,8 +12,8 @@ MCTS Root OpenMP
 MCTS Tree Local Lock OpenMP  
 MCTS Root MPI  
 MCTS Leaf Thread Pool  
-MCTS Leaf CUDA
-MCTS MIX
+MCTS Leaf CUDA  
+MCTS MIX  
 ## Benchmark
 TimeBench  
 WinBench  
