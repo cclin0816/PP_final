@@ -17,3 +17,17 @@ MCTS MIX
 ## Benchmark
 TimeBench  
 WinBench  
+
+## Usage
+modify thread_count in Timebench.cpp
+modify fittime in Timebench.py
+modify boardsize in Timebench.py
+
+```shell=
+make clean
+make 
+python3 Timebench.py [ALL / [target / [init / run]]]
+```
+
+Timebench 跑的時候盡量不要用電腦
+Winbench 沒差

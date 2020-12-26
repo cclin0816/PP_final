@@ -13,7 +13,7 @@ benchtarget = benchlist_conf.read()
 benchtarget = benchtarget.split()
 benchlist_conf.close()
 benchtypelist = ['init', 'run']
-fittime = 0.1
+fittime = 0.2
 boardsize = 13
 
 if not sys.argv[1] in benchtarget:
