@@ -5,5 +5,6 @@
 .vscode
 *.conf
 *.time
+*.win
 !BenchList.conf
 !Makefile

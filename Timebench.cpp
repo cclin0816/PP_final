@@ -6,8 +6,8 @@
 #include <string>
 #include <vector>
 
-#include "mcts.hpp"
 #include "define.hpp"
+#include "mcts.hpp"
 
 // using namespace std;
 
@@ -15,13 +15,13 @@ M *new_agent(const char *target, int boardsize) {
   std::string name = target;
   if (name == "MCTS") {
     return new MCTS(boardsize);
-  } else if(name == "MCTS_L_THD") {
+  } else if (name == "MCTS_L_THD") {
     return new MCTS_L_THD(boardsize, thread_count);
-  } else if(name == "MCTS_R_THD") {
+  } else if (name == "MCTS_R_THD") {
     return new MCTS_R_THD(boardsize, thread_count);
-  } else if(name == "MCTS_T_G_THD") {
+  } else if (name == "MCTS_T_G_THD") {
     return new MCTS_T_G_THD(boardsize, thread_count);
-  } else if(name == "MCTS_T_L_THD") {
+  } else if (name == "MCTS_T_L_THD") {
     return new MCTS_T_L_THD(boardsize, thread_count);
   }
   return nullptr;
@@ -32,16 +32,16 @@ void del_agent(const char *target, M *agent) {
   if (name == "MCTS") {
     MCTS *a = (MCTS *)agent;
     delete a;
-  } else if(name == "MCTS_L_THD") {
+  } else if (name == "MCTS_L_THD") {
     MCTS_L_THD *a = (MCTS_L_THD *)agent;
     delete a;
-  } else if(name == "MCTS_R_THD") {
+  } else if (name == "MCTS_R_THD") {
     MCTS_R_THD *a = (MCTS_R_THD *)agent;
     delete a;
-  } else if(name == "MCTS_T_G_THD") {
+  } else if (name == "MCTS_T_G_THD") {
     MCTS_T_G_THD *a = (MCTS_T_G_THD *)agent;
     delete a;
-  } else if(name == "MCTS_T_L_THD") {
+  } else if (name == "MCTS_T_L_THD") {
     MCTS_T_L_THD *a = (MCTS_T_L_THD *)agent;
     delete a;
   }
@@ -55,6 +55,7 @@ void get_simcount_ref(const char *target, std::vector<int> &simcount_ref,
   for (int i = 0; i < boardsize * boardsize; i++) {
     ref >> simcount_ref[i];
   }
+  ref.close();
 }
 void write_time_ref(const char *target, std::vector<long long> &time_record,
                     std::vector<int> &time_count, int boardsize) {
@@ -68,6 +69,7 @@ void write_time_ref(const char *target, std::vector<long long> &time_record,
       break;
     }
   }
+  ref.close();
 }
 
 void benchtime(const char *target, std::vector<long long> &time_record,

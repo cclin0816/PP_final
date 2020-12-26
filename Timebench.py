@@ -58,14 +58,15 @@ def timebench(target, fittime, boardsize, benchtype):
       run_timebench(target, 3, boardsize)
       fit_to_time(target, fittime, boardsize)
   print("FineTune: ", target)
-  run_timebench(target, 10, boardsize)
+  run_timebench(target, 15, boardsize)
   fit_to_time(target, fittime, boardsize)
   print("Elapse Time: ", time.time() - t1)
 
+if not sys.argv[2] in benchtypelist:
+  raise(ErrorArgument)
+
 if sys.argv[1] == "ALL":
   for target in benchtarget[1:]:
-    timebench(target, fittime, boardsize, "init")
+    timebench(target, fittime, boardsize, sys.argv[2])
 else:
-  if not sys.argv[2] in benchtypelist:
-    raise(ErrorArgument)
   timebench(sys.argv[1], fittime, boardsize, sys.argv[2])
