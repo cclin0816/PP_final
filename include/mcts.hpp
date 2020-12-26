@@ -18,7 +18,7 @@ class MCTS : public M {
  public:
   Node* root;
   std::mt19937 rg;                 // random generator
-  MCTS(unsigned board_size = 13);  // new search tree
+  MCTS(unsigned board_size = BOARD_SIZE);  // new search tree
   ~MCTS();
   void UCTSearch(int round);  // run search multiple times
   void UpdateTree(int move);  // update tree with move
@@ -34,7 +34,7 @@ class MCTS_L_THD : public M {
   std::vector<std::mt19937> rgs;
   std::vector<double> results;
   int load;
-  MCTS_L_THD(unsigned board_size = 13,
+  MCTS_L_THD(unsigned board_size = BOARD_SIZE,
              unsigned thread_num = 1);  // new search tree
   ~MCTS_L_THD();
   void UCTSearch(int round);  // run search multiple times
@@ -49,7 +49,7 @@ class MCTS_R_THD : public M {
   unsigned thdn;
   std::vector<std::thread> thds;
   std::vector<std::mt19937> rgs;
-  MCTS_R_THD(unsigned board_size = 13,
+  MCTS_R_THD(unsigned board_size = BOARD_SIZE,
              unsigned thread_num = 1);  // new search tree
   ~MCTS_R_THD();
   void UCTSearch(int round);  // run search multiple times
@@ -64,7 +64,7 @@ class MCTS_T_G_THD : public M {
   std::vector<std::thread> thds;
   std::vector<std::mt19937> rgs;
   std::mutex lck_exp, lck_bkp;
-  MCTS_T_G_THD(unsigned board_size = 13, unsigned thread_num = 1);
+  MCTS_T_G_THD(unsigned board_size = BOARD_SIZE, unsigned thread_num = 1);
   ~MCTS_T_G_THD();
   void UCTSearch(int round);
   void UpdateTree(int move);
@@ -77,7 +77,7 @@ class MCTS_T_L_THD : public M {
   unsigned thdn;
   std::vector<std::thread> thds;
   std::vector<std::mt19937> rgs;
-  MCTS_T_L_THD(unsigned board_size = 13, unsigned thread_num = 1);
+  MCTS_T_L_THD(unsigned board_size = BOARD_SIZE, unsigned thread_num = 1);
   ~MCTS_T_L_THD();
   void UCTSearch(int round);
   void UpdateTree(int move);
