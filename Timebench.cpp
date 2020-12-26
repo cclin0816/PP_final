@@ -7,8 +7,7 @@
 #include <vector>
 
 #include "mcts.hpp"
-
-#define thread_count 4
+#include "define.hpp"
 
 // using namespace std;
 
