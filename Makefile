@@ -20,6 +20,5 @@ $(EXECS): $(SRC_OBJS) $(BIN_OBJS)
 
 clean:
 	rm -f $(EXECS) $(SRC_OBJS) $(BIN_OBJS)
-	rm MCTS*.conf MCTS*.time MCTS*.win
 
 .PHONY: clean
