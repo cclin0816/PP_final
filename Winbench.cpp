@@ -97,14 +97,14 @@ double benchwin(const char *target, int boardsize,
   agent[0] = new_agent("MCTS", boardsize);
   move_count = 0;
   Game game2(boardsize);
-  while (game.status == 0) {
+  while (game2.status == 0) {
     agent[0]->UCTSearch(simcount_MCTS[move_count]);
     int move = agent[0]->GetMove();
     agent[0]->UpdateTree(move);
     game2.move(move);
     agent[1]->UpdateTree(move);
     move_count++;
-    if(game.status != 0) break;
+    if(game2.status != 0) break;
     agent[1]->UCTSearch(simcount_ref[move_count]);
     move = agent[1]->GetMove();
     agent[1]->UpdateTree(move);
@@ -114,7 +114,8 @@ double benchwin(const char *target, int boardsize,
   }
   del_agent(target, agent[1]);
   del_agent("MCTS", agent[0]);
-  score += ((game.status - 1) / 2.0);
+  score += ((game2.status - 1) / 2.0);
+  std::cout << score / 2.0 << std::endl;
   return score / 2.0;
 }
 
@@ -128,6 +129,7 @@ int main(int argc, char **argv) {
   get_simcount_ref("MCTS", simcount_MCTS, boardsize);
   double score = 0;
   for (int i = 0; i < round; i++) {
+    std::cout << "benchwin: " << i << std::endl;
     score += benchwin(argv[1], boardsize, simcount_ref, simcount_MCTS);
   }
   write_win_ref(argv[1], score, round);

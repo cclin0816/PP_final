@@ -72,8 +72,8 @@ Node* NodeExpand(Node* node, std::mt19937& rg) {
     int choice = rand_choice(rg);
     int move_choice = node->untry_op[choice];
     Node* new_node = new Node(node, move_choice);
-    node->untry_op.erase(node->untry_op.begin() + choice);
     node->c_node[FindMove(move_choice, node->game.avai_op)] = new_node;
+    node->untry_op.erase(node->untry_op.begin() + choice);
     node = new_node;
   }
   return node;
@@ -86,8 +86,8 @@ NodeWithLock* NodeWithLockExpand(NodeWithLock* node, std::mt19937& rg) {
     int choice = rand_choice(rg);
     int move_choice = node->untry_op[choice];
     NodeWithLock* new_node = new NodeWithLock(node, move_choice);
-    node->untry_op.erase(node->untry_op.begin() + choice);
     node->c_node[FindMove(move_choice, node->game.avai_op)] = new_node;
+    node->untry_op.erase(node->untry_op.begin() + choice);
     node = new_node;
   }
   return node;

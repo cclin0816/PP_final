@@ -1,6 +1,7 @@
 import os
 import sys
 import time
+import numpy as np
 
 class ErrorArgument(Exception):
   pass
@@ -14,7 +15,7 @@ benchtarget = benchtarget.split()
 benchlist_conf.close()
 benchtypelist = ['init', 'run']
 # ----------------------PARAMETER------------------------
-fittime = 0.2
+fittime = 0.1
 boardsize = 13
 # -------------------------------------------------------
 
@@ -35,14 +36,19 @@ def fit_to_time(target, sec, boardsize):
   target_simc = target_simc.split()
   target_conf.close()
 
+  ts = []
+  for i in range(len(timeref)):
+    ts.append(((1000000 * sec) / int(timeref[i])) * int(target_simc[i]))
+
+  l = round(len(ts) * 4 / 5)
+  ts_x = np.arange(l)
+  ts_y = ts[:l]
+  z = np.polyfit(ts_x, ts_y, 1)
+  p = np.poly1d(z)
+
   target_conf = open(target + '.conf', 'w')
   for i in range(boardsize * boardsize):
-    if i >= len(timeref):
-      tr = int(timeref[-1])
-    else:
-      tr = int(timeref[i])
-    simc = ((1000000 * sec) / tr) * int(target_simc[i])
-    target_conf.write(f"{round(simc)}\n")
+    target_conf.write(f"{round(p(i))}\n")
   target_conf.close()
   
 
@@ -58,7 +64,7 @@ def timebench(target, fittime, boardsize, benchtype):
       run_timebench(target, 3, boardsize)
       fit_to_time(target, fittime, boardsize)
   print("FineTune: ", target)
-  run_timebench(target, 15, boardsize)
+  run_timebench(target, 10, boardsize)
   fit_to_time(target, fittime, boardsize)
   print("Elapse Time: ", time.time() - t1)
 
