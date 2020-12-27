@@ -84,3 +84,43 @@ class MCTS_T_L_THD : public M {
   int GetMove();
 };
 
+
+class MCTS_L_OMP : public M {
+ public:
+  Node* root;
+  std::mt19937 rg;  // random generator
+  unsigned thdn;
+  std::vector<std::mt19937> rgs;
+  int load;
+  MCTS_L_OMP(unsigned board_size = BOARD_SIZE,
+             unsigned thread_num = 1);  // new search tree
+  ~MCTS_L_OMP();
+  void UCTSearch(int round);  // run search multiple times
+  void UpdateTree(int move);  // update tree with move
+  int GetMove();              // get current best move
+};
+
+class MCTS_R_OMP : public M {
+ public:
+  std::vector<Node*> roots;
+  unsigned thdn;
+  std::vector<std::mt19937> rgs;
+  MCTS_R_OMP(unsigned board_size = BOARD_SIZE,
+             unsigned thread_num = 1);  // new search tree
+  ~MCTS_R_OMP();
+  void UCTSearch(int round);  // run search multiple times
+  void UpdateTree(int move);  // update tree with move
+  int GetMove();              // get current best move
+};
+
+class MCTS_T_L_OMP : public M {
+ public:
+  NodeWithLock* root;
+  unsigned thdn;
+  std::vector<std::mt19937> rgs;
+  MCTS_T_L_OMP(unsigned board_size = BOARD_SIZE, unsigned thread_num = 1);
+  ~MCTS_T_L_OMP();
+  void UCTSearch(int round);
+  void UpdateTree(int move);
+  int GetMove();
+};

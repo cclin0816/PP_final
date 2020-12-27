@@ -6,13 +6,13 @@ MCTS
 MCTS Leaf Thread  
 MCTS Root Thread  
 MCTS Tree Global Lock Thread  
-MCTS Tree Local Lock Thread
-
-## Undone
-
+MCTS Tree Local Lock Thread  
 MCTS Leaf OpenMP  
 MCTS Root OpenMP  
 MCTS Tree Local Lock OpenMP  
+
+## Undone
+
 MCTS Root MPI  
 MCTS Leaf Thread Pool  
 MCTS Leaf CUDA  

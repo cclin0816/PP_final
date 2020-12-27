@@ -480,3 +480,235 @@ int MCTS_T_L_THD::GetMove() {
   }
   return root->game.avai_op[next];
 }
+
+
+
+void MCTS_L_OMP_Worker(Node* node, double* result, std::mt19937* rg, int load) {
+  *result = 0;
+  for (int i = 0; i < load; i++) {
+    *result += Simulate(node->game, *rg);
+  }
+}
+
+MCTS_L_OMP::MCTS_L_OMP(unsigned board_size, unsigned thread_num)
+    : thdn(thread_num), rgs(thread_num) {
+  root = new Node(board_size);
+  load = 4;
+  std::random_device rd;
+  rg.seed(rd());
+  for (int i = 0; i < thdn; i++) {
+    rgs[i].seed(rg());
+  }
+  omp_set_dynamic(0);
+  omp_set_num_threads(thread_num);
+}
+
+MCTS_L_OMP::~MCTS_L_OMP() { delete root; }
+
+void MCTS_L_OMP::UCTSearch(int round) {
+  for (int j = 0; j < (round / (thdn * load)); j++) {
+    Node* node = NodeExpand(NodeSelect(root), rg);
+    double sum = 0;
+#pragma omp parallel shared(node, rgs, load) reduction(+ : sum)
+    {    
+      int i = omp_get_thread_num();
+      MCTS_L_OMP_Worker(node, &sum, &(rgs[i]), load);
+    }
+    NodeBackprop(sum, thdn * load, node);
+  }
+}
+
+void MCTS_L_OMP::UpdateTree(int move) {
+  std::vector<int>::iterator find_move =
+      std::find(root->untry_op.begin(), root->untry_op.end(), move);
+  Node* new_node;
+  if (find_move != root->untry_op.end()) {
+    new_node = new Node(root, move);
+  } else {
+    int move_node = FindMove(move, root->game.avai_op);
+    new_node = root->c_node[move_node];
+    root->c_node[move_node] = nullptr;
+  }
+  delete root;
+  root = new_node;
+  root->p_node = nullptr;
+}
+
+int MCTS_L_OMP::GetMove() {
+  double max_val = 0;
+  int next = 0;
+  Node** c_node = root->c_node;
+  for (int i = 0; i < root->c_node_size; i++) {
+    if (c_node[i] == nullptr) {
+      continue;
+    }
+    double score = c_node[i]->win_count / (double)(c_node[i]->simul_count);
+    if (c_node[i]->game.player != 0) {
+      score = 1.0 - score;
+    }
+    if (score > max_val) {
+      max_val = score;
+      next = i;
+    }
+  }
+  return root->game.avai_op[next];
+}
+
+
+
+MCTS_R_OMP::MCTS_R_OMP(unsigned board_size, unsigned thread_num)
+    : thdn(thread_num), rgs(thread_num), roots(thread_num) {
+  for (int i = 0; i < thdn; i++) {
+    roots[i] = new Node(board_size);
+  }
+  std::random_device rd;
+  for (int i = 0; i < thdn; i++) {
+    rgs[i].seed(rd());
+  }
+  omp_set_dynamic(0);
+  omp_set_num_threads(thread_num);
+}
+
+MCTS_R_OMP::~MCTS_R_OMP() {
+  for (int i = 0; i < thdn; i++) {
+    delete roots[i];
+  }
+}
+
+void MCTS_R_OMP_Worker(Node* root, std::mt19937* rg, int round) {
+  for (int i = 0; i < round; i++) {
+    Node* node = NodeExpand(NodeSelect(root), *rg);
+    NodeBackprop(Simulate(node->game, *rg), 1, node);
+  }
+}
+
+void MCTS_R_OMP::UCTSearch(int round) {
+  #pragma omp parallel shared(roots, rgs, round, thdn)
+  {    
+    int i = omp_get_thread_num();
+    MCTS_R_OMP_Worker(roots[i], &(rgs[i]), round / thdn);
+  }
+}
+
+void MCTS_R_OMP::UpdateTree(int move) {
+  for (auto& root : roots) {
+    std::vector<int>::iterator find_move =
+        std::find(root->untry_op.begin(), root->untry_op.end(), move);
+    Node* new_node;
+    if (find_move != root->untry_op.end()) {
+      new_node = new Node(root, move);
+    } else {
+      int move_node = FindMove(move, root->game.avai_op);
+      new_node = root->c_node[move_node];
+      root->c_node[move_node] = nullptr;
+    }
+    delete root;
+    root = new_node;
+    root->p_node = nullptr;
+  }
+}
+
+int MCTS_R_OMP::GetMove() {
+  double max_val = 0;
+  int next = 0;
+  for (int i = 0; i < roots[0]->c_node_size; i++) {
+    unsigned simul_count = 0;
+    double win_count = 0;
+    int val = 0;
+    for (int j = 0; j < thdn; j++) {
+      if (roots[j]->c_node[i] == nullptr) {
+        continue;
+      }
+      val = j;
+      simul_count += roots[j]->c_node[i]->simul_count;
+      win_count += roots[j]->c_node[i]->win_count;
+    }
+    if (simul_count == 0) continue;
+    double score = win_count / (double)(simul_count);
+    if (roots[val]->c_node[i]->game.player != 0) {
+      score = 1.0 - score;
+    }
+    if (score > max_val) {
+      max_val = score;
+      next = i;
+    }
+  }
+  return roots[0]->game.avai_op[next];
+}
+
+
+MCTS_T_L_OMP::MCTS_T_L_OMP(unsigned board_size, unsigned thread_num)
+    : thdn(thread_num), rgs(thread_num) {
+  root = new NodeWithLock(board_size);
+  std::random_device rd;
+  for (int i = 0; i < thdn; i++) {
+    rgs[i].seed(rd());
+  }
+  omp_set_dynamic(0);
+  omp_set_num_threads(thread_num);
+}
+
+MCTS_T_L_OMP::~MCTS_T_L_OMP() { delete root; }
+
+void MCTS_T_L_OMP_Worker(NodeWithLock* root, std::mt19937* rg, int round) {
+  for (int i = 0; i < round; i++) {
+    NodeWithLock* node = NodeWithLockSelect(root);
+    while (true) {
+      node->lck.lock();
+      if ((!(node->tried_all())) || (node->c_node_size == 0)) {
+        break;
+      } else {
+        node->lck.unlock();
+        node = NodeWithLockSelect(node);
+      }
+    }
+    NodeWithLock* nnode = NodeWithLockExpand(node, *rg);
+    node->lck.unlock();
+    double r = Simulate(nnode->game, *rg);
+    NodeWithLockBackprop(r, 1, nnode);
+  }
+}
+
+void MCTS_T_L_OMP::UCTSearch(int round) {
+#pragma omp parallel shared(root, rgs, round, thdn)
+  {    
+    int i = omp_get_thread_num();
+    MCTS_T_L_THD_Worker(root, &(rgs[i]), round / thdn);
+  }
+}
+
+void MCTS_T_L_OMP::UpdateTree(int move) {
+  std::vector<int>::iterator find_move =
+      std::find(root->untry_op.begin(), root->untry_op.end(), move);
+  NodeWithLock* new_node;
+  if (find_move != root->untry_op.end()) {
+    new_node = new NodeWithLock(root, move);
+  } else {
+    int move_node = FindMove(move, root->game.avai_op);
+    new_node = root->c_node[move_node];
+    root->c_node[move_node] = nullptr;
+  }
+  delete root;
+  root = new_node;
+  root->p_node = nullptr;
+}
+
+int MCTS_T_L_OMP::GetMove() {
+  double max_val = 0;
+  int next = 0;
+  NodeWithLock** c_node = root->c_node;
+  for (int i = 0; i < root->c_node_size; i++) {
+    if (c_node[i] == nullptr) {
+      continue;
+    }
+    double score = c_node[i]->win_count / (double)(c_node[i]->simul_count);
+    if (c_node[i]->game.player != 0) {
+      score = 1.0 - score;
+    }
+    if (score > max_val) {
+      max_val = score;
+      next = i;
+    }
+  }
+  return root->game.avai_op[next];
+}

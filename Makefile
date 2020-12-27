@@ -1,5 +1,5 @@
 CXX := g++
-CXXFLAGS := -I./include -m64 -mavx2 --std=c++14 -O3 -pthread
+CXXFLAGS := -I./include -m64 -mavx2 --std=c++14 -O3 -pthread -fopenmp
 
 BIN_DIR := .
 BINS := $(wildcard $(BIN_DIR)/*.cpp)
@@ -20,5 +20,6 @@ $(EXECS): $(SRC_OBJS) $(BIN_OBJS)
 
 clean:
 	rm -f $(EXECS) $(SRC_OBJS) $(BIN_OBJS)
+	rm MCTS*.conf MCTS*.time MCTS*.win
 
 .PHONY: clean
