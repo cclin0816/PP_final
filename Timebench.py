@@ -45,7 +45,7 @@ def fit_to_time(target, sec, boardsize):
   ts_y = ts[:l]
   z = np.polyfit(ts_x, ts_y, 1)
   p = np.poly1d(z)
-
+  print("Fit Line: ", round(z[1]), round(z[0]))
   target_conf = open(target + '.conf', 'w')
   for i in range(boardsize * boardsize):
     target_conf.write(f"{round(p(i))}\n")

@@ -108,7 +108,6 @@ int main(int argc, char **argv) {
   std::vector<int> simcount_ref(boardsize * boardsize, 0);
   get_simcount_ref(argv[1], simcount_ref, boardsize);
   for (int i = 0; i < round; i++) {
-    std::cout << "benchtime: " << i << std::endl;
     benchtime(argv[1], time_record, time_count, boardsize, simcount_ref);
   }
   write_time_ref(argv[1], time_record, time_count, boardsize);

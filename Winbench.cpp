@@ -65,6 +65,7 @@ void write_win_ref(const char *target, double score, int round) {
   refi.close();
   std::fstream refo(name.c_str(), std::fstream::out);
   refo << round + prev_round << ' ' << (score + prev_round * prev_score) / (round + prev_round) << '\n';
+  std::cout << "score: " << (score + prev_round * prev_score) / (round + prev_round) << std::endl;
 }
 
 double benchwin(const char *target, int boardsize,
@@ -115,7 +116,6 @@ double benchwin(const char *target, int boardsize,
   del_agent(target, agent[1]);
   del_agent("MCTS", agent[0]);
   score += ((game2.status - 1) / 2.0);
-  std::cout << score / 2.0 << std::endl;
   return score / 2.0;
 }
 
@@ -129,7 +129,6 @@ int main(int argc, char **argv) {
   get_simcount_ref("MCTS", simcount_MCTS, boardsize);
   double score = 0;
   for (int i = 0; i < round; i++) {
-    std::cout << "benchwin: " << i << std::endl;
     score += benchwin(argv[1], boardsize, simcount_ref, simcount_MCTS);
   }
   write_win_ref(argv[1], score, round);
