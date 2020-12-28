@@ -15,8 +15,11 @@ MCTS Tree Local Lock OpenMP
 
 MCTS Root MPI  
 MCTS Leaf Thread Pool  
+
+## Giveup
+
 MCTS Leaf CUDA  
-MCTS MIX
+MCTS MIX  
 
 ## Benchmark
 

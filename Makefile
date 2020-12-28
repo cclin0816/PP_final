@@ -1,5 +1,6 @@
 CXX := g++
 CXXFLAGS := -I./include -m64 -mavx2 --std=c++14 -O3 -pthread -fopenmp
+BOOST := -lboost_system -lboost_thread
 
 BIN_DIR := .
 BINS := $(wildcard $(BIN_DIR)/*.cpp)
@@ -13,10 +14,10 @@ SRC_OBJS := $(SRCS:%.cpp=%.o)
 all: $(EXECS)
 
 $(EXECS): $(SRC_OBJS) $(BIN_OBJS)
-	$(CXX) $(CXXFLAGS) -o $@ $@.o $(SRC_OBJS)
+	$(CXX) $(CXXFLAGS) -o $@ $@.o $(SRC_OBJS) $(BOOST)
 
 %.o: %.cpp
-	$(CXX) $(CXXFLAGS) -c -o $@ $<
+	$(CXX) $(CXXFLAGS) -c -o $@ $< $(BOOST)
 
 clean:
 	rm -f $(EXECS) $(SRC_OBJS) $(BIN_OBJS)

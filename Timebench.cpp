@@ -29,6 +29,8 @@ M *new_agent(const char *target, int boardsize) {
     return new MCTS_R_OMP(boardsize, thread_count);
   } else if (name == "MCTS_T_L_OMP") {
     return new MCTS_T_L_OMP(boardsize, thread_count);
+  } else if (name == "MCTS_L_TP") {
+    return new MCTS_L_TP(boardsize, thread_count);
   }
   return nullptr;
 }
@@ -58,6 +60,9 @@ void del_agent(const char *target, M *agent) {
     delete a;
   } else if (name == "MCTS_T_L_OMP") {
     MCTS_T_L_OMP *a = (MCTS_T_L_OMP *)agent;
+    delete a;
+  } else if (name == "MCTS_L_TP") {
+    MCTS_L_TP *a = (MCTS_L_TP *)agent;
     delete a;
   }
 }

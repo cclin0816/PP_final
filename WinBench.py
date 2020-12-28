@@ -31,7 +31,7 @@ def winbench(target, boardsize, benchtype):
     target_win = open(target + '.win', 'w')
     target_win.write("0 0\n")
     target_win.close()
-  run_winbench(target, 100, boardsize)
+  run_winbench(target, 10, boardsize)
   print("Elapse Time: ", time.time() - t1)
 
 if not sys.argv[2] in benchtypelist:

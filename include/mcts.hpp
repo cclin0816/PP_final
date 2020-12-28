@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <random>
 #include <thread>
+#include "boost/asio/thread_pool.hpp"
 
 #include "define.hpp"
 #include "node.hpp"
@@ -123,4 +124,20 @@ class MCTS_T_L_OMP : public M {
   void UCTSearch(int round);
   void UpdateTree(int move);
   int GetMove();
+};
+
+class MCTS_L_TP : public M {
+ public:
+  Node* root;
+  std::mt19937 rg;  // random generator
+  unsigned thdn;
+  std::vector<std::mt19937> rgs;
+  int load;
+  boost::asio::thread_pool pool;
+  MCTS_L_TP(unsigned board_size = BOARD_SIZE,
+             unsigned thread_num = 1);  // new search tree
+  ~MCTS_L_TP();
+  void UCTSearch(int round);  // run search multiple times
+  void UpdateTree(int move);  // update tree with move
+  int GetMove();              // get current best move
 };
