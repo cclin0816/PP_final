@@ -21,7 +21,8 @@ if not sys.argv[1] in benchtarget:
   raise TargetNotExist
 
 def run_winbench(target, round, size):
-  os.system(f"./Winbench {target} {size} {round}")
+  if os.system(f"./Winbench {target} {size} {round}") != 0:
+    exit(1)
 
 
 def winbench(target, boardsize, benchtype):
@@ -31,7 +32,7 @@ def winbench(target, boardsize, benchtype):
     target_win = open(target + '.win', 'w')
     target_win.write("0 0\n")
     target_win.close()
-  run_winbench(target, 100, boardsize)
+  run_winbench(target, 5, boardsize)
   print("Elapse Time: ", time.time() - t1)
 
 if not sys.argv[2] in benchtypelist:
@@ -39,6 +40,9 @@ if not sys.argv[2] in benchtypelist:
 
 if sys.argv[1] == "ALL":
   for target in benchtarget[1:]:
-    winbench(target, boardsize, sys.argv[2])
+      winbench(target, boardsize, sys.argv[2])
+  for i in range(19):
+    for target in benchtarget[1:]:
+      winbench(target, boardsize, "run")
 else:
   winbench(sys.argv[1], boardsize, sys.argv[2])
