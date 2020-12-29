@@ -46,3 +46,6 @@ if sys.argv[1] == "ALL":
       winbench(target, boardsize, "run")
 else:
   winbench(sys.argv[1], boardsize, sys.argv[2])
+  for i in range(19):
+    winbench(sys.argv[1], boardsize, "run")
+  
