@@ -1,8 +1,9 @@
 #include "mcts.hpp"
 
+#include <omp.h>
+
 #include <algorithm>
 #include <iterator>
-#include <omp.h>
 
 Node* NodeSelect(Node* root) {
   Node* node_itr = root;
@@ -481,8 +482,6 @@ int MCTS_T_L_THD::GetMove() {
   return root->game.avai_op[next];
 }
 
-
-
 void MCTS_L_OMP_Worker(Node* node, double* result, std::mt19937* rg, int load) {
   *result = 0;
   for (int i = 0; i < load; i++) {
@@ -510,7 +509,7 @@ void MCTS_L_OMP::UCTSearch(int round) {
     Node* node = NodeExpand(NodeSelect(root), rg);
     double sum = 0;
 #pragma omp parallel shared(node, rgs, load) reduction(+ : sum)
-    {    
+    {
       int i = omp_get_thread_num();
       MCTS_L_OMP_Worker(node, &sum, &(rgs[i]), load);
     }
@@ -554,8 +553,6 @@ int MCTS_L_OMP::GetMove() {
   return root->game.avai_op[next];
 }
 
-
-
 MCTS_R_OMP::MCTS_R_OMP(unsigned board_size, unsigned thread_num)
     : thdn(thread_num), rgs(thread_num), roots(thread_num) {
   for (int i = 0; i < thdn; i++) {
@@ -583,8 +580,8 @@ void MCTS_R_OMP_Worker(Node* root, std::mt19937* rg, int round) {
 }
 
 void MCTS_R_OMP::UCTSearch(int round) {
-  #pragma omp parallel shared(roots, rgs, round, thdn)
-  {    
+#pragma omp parallel shared(roots, rgs, round, thdn)
+  {
     int i = omp_get_thread_num();
     MCTS_R_OMP_Worker(roots[i], &(rgs[i]), round / thdn);
   }
@@ -636,7 +633,6 @@ int MCTS_R_OMP::GetMove() {
   return roots[0]->game.avai_op[next];
 }
 
-
 MCTS_T_L_OMP::MCTS_T_L_OMP(unsigned board_size, unsigned thread_num)
     : thdn(thread_num), rgs(thread_num) {
   root = new NodeWithLock(board_size);
@@ -671,7 +667,7 @@ void MCTS_T_L_OMP_Worker(NodeWithLock* root, std::mt19937* rg, int round) {
 
 void MCTS_T_L_OMP::UCTSearch(int round) {
 #pragma omp parallel shared(root, rgs, round, thdn)
-  {    
+  {
     int i = omp_get_thread_num();
     MCTS_T_L_THD_Worker(root, &(rgs[i]), round / thdn);
   }

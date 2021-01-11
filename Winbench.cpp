@@ -8,7 +8,6 @@
 #include "define.hpp"
 #include "mcts.hpp"
 
-// using namespace std;
 
 M *new_agent(const char *target, int boardsize) {
   std::string name = target;

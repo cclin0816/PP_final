@@ -15,6 +15,7 @@ benchlist_conf.close()
 benchtypelist = ['init', 'run']
 # ----------------------PARAMETER------------------------
 boardsize = 13
+round = 20
 # -------------------------------------------------------
 
 if not sys.argv[1] in benchtarget:
@@ -41,11 +42,11 @@ if not sys.argv[2] in benchtypelist:
 if sys.argv[1] == "ALL":
   for target in benchtarget[1:]:
       winbench(target, boardsize, sys.argv[2])
-  for i in range(19):
+  for i in range(round - 1):
     for target in benchtarget[1:]:
       winbench(target, boardsize, "run")
 else:
   winbench(sys.argv[1], boardsize, sys.argv[2])
-  for i in range(19):
+  for i in range(round - 1):
     winbench(sys.argv[1], boardsize, "run")
   
