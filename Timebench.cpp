@@ -108,6 +108,7 @@ void benchtime(const char *target, std::vector<long long> &time_record,
     time_count[move_count]++;
     game.move(move);
     agent[++move_count % 2]->UpdateTree(move);
+    std::cout << move << ' ' << duration << std::endl;
   }
   for (int i = 0; i < 2; i++) {
     del_agent(target, agent[i]);

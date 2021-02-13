@@ -15,8 +15,8 @@ benchtarget = benchtarget.split()
 benchlist_conf.close()
 benchtypelist = ['init', 'run']
 # ----------------------PARAMETER------------------------
-fittime = 0.1
-boardsize = 13
+fittime = 2
+boardsize = 19
 # -------------------------------------------------------
 
 if not sys.argv[1] in benchtarget:
@@ -58,14 +58,14 @@ def timebench(target, fittime, boardsize, benchtype):
   if benchtype == 'init':
     target_conf = open(target + '.conf', 'w')
     for i in range(boardsize * boardsize):
-      target_conf.write("4096\n")
+      target_conf.write("40960\n")
     target_conf.close()
-    for i in range(3):
-      run_timebench(target, 3, boardsize)
+    for i in range(2):
+      run_timebench(target, 1, boardsize)
       fit_to_time(target, fittime, boardsize)
-  print("FineTune: ", target)
-  run_timebench(target, 10, boardsize)
-  fit_to_time(target, fittime, boardsize)
+  # print("FineTune: ", target)
+  # run_timebench(target, 3, boardsize)
+  # fit_to_time(target, fittime, boardsize)
   print("Elapse Time: ", time.time() - t1)
 
 if not sys.argv[2] in benchtypelist:

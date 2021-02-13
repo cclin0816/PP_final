@@ -1,6 +1,7 @@
 #include "game.hpp"
 
 #include <algorithm>
+#include <iostream>
 
 Game::Game(unsigned board_size)
     : _board_size(board_size),
@@ -56,7 +57,7 @@ bool Game::bingo(int pos) {
   int line_len = 1;
   int pos_itr = pos;
   int size = _board_size;
-  int size_1 = size_1;
+  int size_1 = size - 1;
   while (pos_itr % size > 0) {
     pos_itr--;
     if (board[pos_itr] == player) {
